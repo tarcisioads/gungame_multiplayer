@@ -1,4 +1,4 @@
-var socket = io('http://localhost:8000');
+var socket = io();
 var camera, controls, scene, renderer, stats;
 var light, mesh;
 var mixer, morphs = [];
@@ -72,7 +72,7 @@ animate();
 
 // Fire
 $(this).click(function () {
-    var speed = camera.getWorldDirection().multiplyScalar(20); // create speed vactor
+    var speed = camera.getWorldDirection().multiplyScalar(150); // create speed vactor
     AddBullet(camera.position, speed);
     socket.emit('bullet', [controls.object.position, speed]);
 });
@@ -119,6 +119,7 @@ function init() {
         vertex.y += Math.random() * 2;
         vertex.z += Math.random() * 20 - 10;
     }
+    
     for (var i = 0, l = geometry.faces.length; i < l; i++) {
         var face = geometry.faces[i];
         face.vertexColors[0] = new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75);
@@ -126,6 +127,7 @@ function init() {
         face.vertexColors[2] = new THREE.Color().setHSL(Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75);
 
     }
+
     material = new THREE.MeshBasicMaterial({vertexColors: THREE.VertexColors, opacity: 0.5, transparent: true});
     mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
@@ -171,8 +173,8 @@ function init() {
 
     // Controls
     controls = new THREE.FirstPersonControls(camera, renderer.domElement);
-    controls.movementSpeed = 150;
-    controls.lookSpeed = 0.3;
+    controls.movementSpeed = 90;
+    controls.lookSpeed = 20;
     controls.lookVertical = true;
     window.addEventListener('resize', onWindowResize, false);
 
@@ -185,12 +187,16 @@ function init() {
 
     controls.addEventListener( 'lock', function () {
 
+        socket = io('http://localhost:8000');
+
         instructions.style.display = 'none';
         blocker.style.display = 'none';
 
     } );
 
     controls.addEventListener( 'unlock', function () {
+        
+        socket = io();
 
         blocker.style.display = 'block';
         instructions.style.display = '';

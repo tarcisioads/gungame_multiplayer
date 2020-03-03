@@ -65,6 +65,7 @@ THREE.FirstPersonControls = function (object, domElement) {
 
     function onPointerlockChange() {
 
+        
         if ( document.pointerLockElement === scope.domElement ) {
 
             scope.dispatchEvent( lockEvent );
@@ -156,20 +157,24 @@ THREE.FirstPersonControls = function (object, domElement) {
 
         if ( scope.isLocked === false ) return;
 
-        if (this.domElement === document) {
-
+        if (scope.domElement === document) {
             this.mouseX = event.pageX - this.viewHalfX;
             this.mouseY = event.pageY - this.viewHalfY;
-
         } else {
-            this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
-            this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
-
+            //this.mouseX = event.pageX - scope.domElement.offsetLeft - this.viewHalfX;
+            //this.mouseY = event.pageY - scope.domElement.offsetTop - this.viewHalfY;
+            var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+            var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+            this.mouseX = movementX ;
+            this.mouseY = movementY ;
+            console.log('onMouseMove FirstPersonControls x:'+this.mouseX+' y:'+this.mouseY);
         }
-
+        
     };
 
     this.onKeyDown = function (event) {
+
+        if ( scope.isLocked === false ) return;
 
         //event.preventDefault();
 
@@ -208,6 +213,8 @@ THREE.FirstPersonControls = function (object, domElement) {
 
     this.onKeyUp = function (event) {
 
+        if ( scope.isLocked === false ) return;
+
         switch (event.keyCode) {
 
             case 38: /*up*/
@@ -242,6 +249,8 @@ THREE.FirstPersonControls = function (object, domElement) {
     };
 
     this.update = function (delta) {
+
+        if ( scope.isLocked === false ) return;
 
         if (this.enabled === false) return;
 
@@ -299,6 +308,9 @@ THREE.FirstPersonControls = function (object, domElement) {
 
         }
 
+        this.mouseX = 0;
+        this.mouseY = 0;
+
         var targetPosition = this.target,
             position = this.object.position;
 
@@ -319,12 +331,13 @@ THREE.FirstPersonControls = function (object, domElement) {
 
     this.connect = function () {
 
-        scope.domElement.addEventListener( 'pointerlockchange', onPointerlockChange, false );
-        scope.domElement.addEventListener( 'pointerlockerror', onPointerlockError, false );
-        scope.domElement.addEventListener('contextmenu', contextmenu, false);
-        scope.domElement.addEventListener('mousemove', _onMouseMove, false);
-        scope.domElement.addEventListener('mousedown', _onMouseDown, false);
-        scope.domElement.addEventListener('mouseup', _onMouseUp, false);
+       
+        document.addEventListener( 'pointerlockchange', onPointerlockChange, false );
+        document.addEventListener( 'pointerlockerror', onPointerlockError, false );
+        document.addEventListener('contextmenu', contextmenu, false);
+        document.addEventListener('mousemove', _onMouseMove, false);
+        document.addEventListener('mousedown', _onMouseDown, false);
+        document.addEventListener('mouseup', _onMouseUp, false);
 
         window.addEventListener('keydown', _onKeyDown, false);
         window.addEventListener('keyup', _onKeyUp, false);
@@ -333,12 +346,12 @@ THREE.FirstPersonControls = function (object, domElement) {
 
     this.disconnect = function () {
 
-        scope.domElement.removeEventListener( 'pointerlockchange', onPointerlockChange, false );
-        scope.domElement.removeEventListener( 'pointerlockerror', onPointerlockError, false );
-        scope.domElement.removeEventListener('contextmenu', contextmenu, false);
-        scope.domElement.removeEventListener('mousedown', _onMouseDown, false);
-        scope.domElement.removeEventListener('mousemove', _onMouseMove, false);
-        scope.domElement.removeEventListener('mouseup', _onMouseUp, false);
+        document.removeEventListener( 'pointerlockchange', onPointerlockChange, false );
+        document.removeEventListener( 'pointerlockerror', onPointerlockError, false );
+        document.removeEventListener('contextmenu', contextmenu, false);
+        document.removeEventListener('mousedown', _onMouseDown, false);
+        document.removeEventListener('mousemove', _onMouseMove, false);
+        document.removeEventListener('mouseup', _onMouseUp, false);
 
         window.removeEventListener('keydown', _onKeyDown, false);
         window.removeEventListener('keyup', _onKeyUp, false);
@@ -368,7 +381,7 @@ THREE.FirstPersonControls = function (object, domElement) {
 
     this.lock = function () {
 
-        this.domElement.requestPointerLock();
+        scope.domElement.requestPointerLock();
 
     };
 
