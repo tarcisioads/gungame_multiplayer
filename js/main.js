@@ -1,4 +1,4 @@
-var socket = io();
+var socket = io('http://localhost:8000', {autoConnect:false});
 var camera, controls, scene, renderer, stats;
 var light, mesh;
 var mixer, morphs = [];
@@ -12,7 +12,6 @@ var bulletMap = textureLoader.load("textures/sprite.png");
 var loader = new THREE.JSONLoader();
 var blocker = document.getElementById( 'blocker' );
 var instructions = document.getElementById( 'instructions' );
-
 
 
 
@@ -70,12 +69,6 @@ socket.on('reconnect_failed', function () {
 init();
 animate();
 
-// Fire
-$(this).click(function () {
-    var speed = camera.getWorldDirection().multiplyScalar(150); // create speed vactor
-    AddBullet(camera.position, speed);
-    socket.emit('bullet', [controls.object.position, speed]);
-});
 
 function init() {
     // Stats Monitor
@@ -84,7 +77,7 @@ function init() {
     document.body.appendChild(stats.dom);
 
     // Camera
-    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.set(Math.random() * 600 - 300, 25, Math.random() * 600 - 300);// Random create initial position [-400, 400]
 
     // Scene
@@ -171,6 +164,19 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    
+    // Crosshair
+    createCrosshair(renderer);
+
+
+    // Fire
+    $(renderer.domElement).click(function () {
+        var speed = camera.getWorldDirection().multiplyScalar(90); // create speed vactor
+        AddBullet(camera.position, speed);
+        socket.emit('bullet', [controls.object.position, speed]);
+    });
+
+
     // Controls
     controls = new THREE.FirstPersonControls(camera, renderer.domElement);
     controls.movementSpeed = 90;
@@ -179,15 +185,15 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
 
-    instructions.addEventListener( 'click', function () {
+    $('#btnplay').bind( 'click', function () {
 
         controls.lock();
 
-    }, false );
+    });
 
     controls.addEventListener( 'lock', function () {
 
-        socket = io('http://localhost:8000');
+        socket.connect();
 
         instructions.style.display = 'none';
         blocker.style.display = 'none';
@@ -196,7 +202,7 @@ function init() {
 
     controls.addEventListener( 'unlock', function () {
         
-        socket = io();
+        socket.disconnect();
 
         blocker.style.display = 'block';
         instructions.style.display = '';
@@ -320,4 +326,24 @@ function Bullet(particle, speed) {
     this.particle = particle;
     this.speed = speed;
     return this;
+}
+
+  /// It creates the camera and adds it to the graph
+  /**
+   * @param renderer - The renderer associated with the camera
+   */
+function createCrosshair(renderer) {
+    // Create the Crosshair
+    var crosshair = new Crosshair();
+    crosshair.lookAt(camera.position);
+    camera.add( crosshair );
+
+    // Place it in the center
+    var crosshairPercentX = 50;
+    var crosshairPercentY = 50;
+    var crosshairPositionX = (crosshairPercentX / 100) * 2 - 1;
+    var crosshairPositionY = (crosshairPercentY / 100) * 2 - 1;
+    crosshair.position.set((crosshairPercentX / 100) * 2 - 1, (crosshairPercentY / 100) * 2 - 1, -0.3);
+
+    
 }

@@ -167,7 +167,6 @@ THREE.FirstPersonControls = function (object, domElement) {
             var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
             this.mouseX = movementX ;
             this.mouseY = movementY ;
-            console.log('onMouseMove FirstPersonControls x:'+this.mouseX+' y:'+this.mouseY);
         }
         
     };
